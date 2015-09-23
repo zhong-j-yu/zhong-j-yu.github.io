@@ -1,0 +1,80 @@
+<h1>OD</h1>
+
+<p><strong><code>OD</code></strong> is a small library for the Service Locator pattern.</p>
+<p><code>OD</code> supports Java 1.6 and up. Download jar Javadoc google group</p>
+
+<h2 id=Lookup_and_Binding><a href=#Lookup_and_Binding>Lookup and Binding</a></h2>
+
+<p>To lookup an object of a certain type, call <code>OD.get(type)</code></p>
+<pre>
+Foo foo = OD.get( Foo.class );
+</pre>
+<p>Prior to the lookup, typically during the startup phase, the application needs to bind the type to a supplier. For example</p>
+<pre>
+OD.bind( Foo.class ).to( ()-&gt;new FooImpl() );   //  or, `to(FooImpl::new)`
+
+OD.bind( Foo.class ).to( FooImpl.class );  // if lambda is not available
+</pre>
+<p>The supplier will be invoked for every call of <code>OD.get(Foo.class)</code>.</p>
+<p>To bind <code>Foo</code> to a singleton</p>
+<pre>
+OD.bind( Foo.class ).to( new FooImpl() );
+</pre>
+
+<h2 id=Tags><a href=#Tags>Tags</a></h2>
+
+<p>If type alone is not sufficient as the lookup key, <code>tags</code> can be added as qualifiers. Tags can be an arbitrary array of Objects. For example</p>
+<pre>
+OD.bind(Foo.class).tags(&quot;bar&quot;, 1).to(foo1);
+
+...
+OD.get(Foo.class, &quot;bar&quot;, 1);  // foo1
+</pre>
+
+<h2 id=Local_Binding><a href=#Local_Binding>Local Binding</a></h2>
+
+<p>A <em>local binding</em> is only visible to the current thread</p>
+<pre>
+OD.Local.bind( Foo.class ).to( someFoo );
+
+// later in the same thread
+OD.get(Foo.class);  // someFoo
+</pre>
+<p>Local bindings can be saved and restored</p>
+<pre>
+List&lt;OD.Binding&gt; prev = OD.Local.getBindings();
+...
+OD.Local.setBindings(prev); // restore bindings
+</pre>
+
+<h2 id=Search_OD_usage><a href=#Search_OD_usage>Search OD usage</a></h2>
+
+
+<h2 id=Generics><a href=#Generics>Generics</a></h2>
+
+<p>wildcard</p>
+
+<h2 id=Binding_List><a href=#Binding_List>Binding List</a></h2>
+
+<p>There is a global binding list, populated by <code>OD.bind()</code>; there is a local binding list for every thread, populate by <code>OD.Local.bind()</code>.</p>
+<p>Every lookup first checks the local bindings, then the global bindings.</p>
+<p>last wins</p>
+
+<h2 id=Custom_Binding><a href=#Custom_Binding>Custom Binding</a></h2>
+
+<pre>
+OD.Binding binding = (type,tags)-&gt;{...}
+</pre>
+<p>Tags are intended to be used as limited lookup keys, not arbitrary construction parameters. For example, instead of</p>
+<pre>
+OD.get(Shoe.class, size, color)  // get a Shoe of size and color
+</pre>
+<p>it's better to design it with a factory that takes the parameters</p>
+<pre>
+OD.get(ShoeMaker.class).make(size, color);
+</pre>
+
+<h2 id=Template_Binding><a href=#Template_Binding>Template Binding</a></h2>
+
+
+<h2 id=Why_OD><a href=#Why_OD>Why OD</a></h2>
