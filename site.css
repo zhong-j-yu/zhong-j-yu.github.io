@@ -18,7 +18,16 @@ a:hover{
 }
 
 
-
+div.toc {
+    display:table;
+    background-color: #f7f7f7;
+    border: 1px solid #aaa;
+    padding: 10px 30px 0 10px;
+}
+div.toc p {
+    font-weight: bold;
+    margin: 0 0 -10px 0;
+}
 
 
 a{
