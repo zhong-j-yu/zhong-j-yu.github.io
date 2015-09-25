@@ -1,0 +1,79 @@
+body{
+    margin: 20px; width: 800px;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+    color:#000;
+}
+
+
+
+a:hover{
+    text-decoration: underline;
+}
+
+:target{
+    background: #FFFF66;
+    background: linear-gradient( 90deg, #FFFF66, #FFFFFF 400px) !important;
+}
+
+
+
+
+
+a{
+    color: #00f;
+    text-decoration: none;
+}
+a:visited{
+    color: #00f;
+}
+
+h1 {
+    margin: 30px 0 20px 0;
+    font-size: 24px;
+    font-weight: bold;
+}
+h2 {
+    margin: 40px 0 20px 0;
+    font-size: 24px;
+    font-weight: normal;
+
+    padding-bottom: 3px;
+    border-bottom: 1px solid #BBB;
+}
+h2 a {
+    color: black !important;
+}
+
+p {
+    /*margin: 20px 0 20px 0;*/
+}
+
+a.api {
+    /*font-weight: bold;*/
+}
+
+li {
+    margin: 3px 0;
+}
+
+
+/*
+     the following styles should be hardcoded in forum messages generated from markdown
+     see MyVerbatimSerializer and MyToHtmlSerializer
+*/
+code
+{
+    background: #f0f0f0; padding: 0 4px 0 4px;
+}
+
+pre{
+    background: #f0f0f0; padding: 5px 0 5px 10px;
+    padding-left: 40px;
+}
+
+blockquote{
+    border-left: 3px solid #ddd; padding-left: 7px; margin-left: 10px;
+}
+
