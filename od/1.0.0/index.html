@@ -7,32 +7,29 @@
     
 <h1>OD</h1>
 
-<p><strong><code>OD</code></strong> is a simple <em>Service Locator</em> library.</p>
-<p>Why service locator? While <em>Dependency Injection</em> is great, it might be too heavy handed for some applications.</p>
-<p><code>OD</code> works with Java 6+; it is released to Public Domain.</p>
+<p><strong><code>OD</code></strong> is a simple <em>Service Locator</em> library for Java 6+.</p>
+<p>While the Service Locator pattern is widely discredited, it may still have merits in some situations; see article <a href="http://bayou.io/draft/In_Defense_of_Service_Locator.html"><em>In Defense of Service Locator</em></a>. We created this library for people who may consider using Service Locator in their applications.</p>
 <p><a href="od-1.0.0.jar">[ od-1.0.0.jar ]</a> &nbsp;&nbsp;&nbsp;&nbsp; <a href="javadoc/">[ javadoc ]</a> &nbsp;&nbsp;&nbsp;&nbsp; <a href="https://github.com/zhong-j-yu/od">[ github repo ]</a> &nbsp;&nbsp;&nbsp;&nbsp; <a href="https://groups.google.com/forum/#!forum/od-service-locator">[ google group ]</a></p>
 <div class=toc><p>Contents</p>
 <ul>
   <li><a href=#Lookup_and_Binding>Lookup and Binding</a></li>
   <li><a href=#Tags>Tags</a></li>
   <li><a href=#Local_Binding>Local Binding</a></li>
-  <li><a href=#Search_OD_usage>Search OD usage</a></li>
   <li><a href=#Generics>Generics</a></li>
   <li><a href=#Binding_List>Binding List</a></li>
   <li><a href=#Custom_Binding>Custom Binding</a></li>
   <li><a href=#Template_Binding>Template Binding</a></li>
-  <li><a href=#Why_OD>Why OD</a></li>
 </ul>
 </div>
 
 
 <h2 id=Lookup_and_Binding><a href=#Lookup_and_Binding>Lookup and Binding</a></h2>
 
-<p>To lookup an object of a certain type, call <code>OD.get(type)</code></p>
+<p>To lookup an object of a certain type, call <a href="javadoc/bayou/od/OD.html#get-bayou.jtype.ClassType-java.lang.Object...-"><code>OD.get(type)</code></a></p>
 <pre>
 Foo foo = OD.get( Foo.class );
 </pre>
-<p>Prior to the lookup, typically during the startup phase, the application needs to bind the type to a supplier. For example</p>
+<p>Prior to the lookup, typically during the startup phase, the application needs to bind the type to a <a href="javadoc/bayou/od/OD.BindingBuilder.html#to-bayou.od.OD.Supplier-">supplier</a>. For example</p>
 <pre>
 OD.bind( Foo.class ).to( ()-&gt;new FooImpl() );   //  or, `to(FooImpl::new)`
 
@@ -46,12 +43,12 @@ OD.bind( Foo.class ).to( new FooImpl() );
 
 <h2 id=Tags><a href=#Tags>Tags</a></h2>
 
-<p>If type alone is not sufficient as the lookup key, <code>tags</code> can be added as qualifiers. Tags can be an arbitrary array of Objects. For example</p>
+<p>If <code>type</code> alone is not sufficient as lookup key, <a href="javadoc/bayou/od/OD.BindingBuilder.html#tags-java.lang.Object...-"><code>tags</code></a> can be added as qualifiers. Tags can be an arbitrary array of <code>Object</code>s, for example</p>
 <pre>
-OD.bind(Foo.class).tags(&quot;bar&quot;, 1).to(foo1);
+OD.bind(Integer.class).tags(&quot;bar&quot;, 1).to(42);
 
 ...
-OD.get(Foo.class, &quot;bar&quot;, 1);  // foo1
+OD.get(Integer.class, &quot;bar&quot;, 1);  // returns `42`
 </pre>
 
 <h2 id=Local_Binding><a href=#Local_Binding>Local Binding</a></h2>
@@ -70,38 +67,121 @@ List&lt;OD.Binding&gt; prev = OD.Local.getBindings();
 OD.Local.setBindings(prev); // restore bindings
 </pre>
 
-<h2 id=Search_OD_usage><a href=#Search_OD_usage>Search OD usage</a></h2>
-
-
 <h2 id=Generics><a href=#Generics>Generics</a></h2>
 
-<p>wildcard</p>
+<p>Generic class or interface types can be used in lookup/binding; these types are represented by <a href="javadoc/bayou/jtype/ClassType.html"><code>ClassType</code></a>.</p>
+<p>For example, to bind and look up on a generic type <code>List&lt;Integer&gt;</code></p>
+<pre>
+    OD.bind( new ClassType&lt; List&lt;Integer&gt; &gt;(){} ).to( Arrays.asList(7,8,9) );
+    // type literal         -------------
+
+    OD.get( ClassType.of(List.class, Integer.class) );
+    // type factory      ----        -------
+</pre>
+<p>See package <a href="javadoc/bayou/jtype/package-summary.html"><code>bayou.jtype</code></a> for type representations in our library.</p>
+
+<h3>Wildcard</h3>
+
+<p>To avoid confusion, we do not automatically extend bindings to <em>super classes/interfaces</em>. For example, a binding of <code>Integer</code> does not imply a binding of <code>Number</code>. If you do need that, you can manually add multiple bindings.</p>
+<p>On the other hand, we do extend bindings to <em>super types</em> through <a href="http://bayou.io/draft/Capturing_Wildcards.html#Wild_Type">wildcards</a>; therefore, a binding of <code>List&lt;Integer&gt;</code> can be looked up by <code>List&lt;? extends Number&gt;</code>.</p>
+<pre>
+OD.get( new ClassType&lt; List&lt;? extends Number&gt; &gt;(){} );
+                       ----------------------
+</pre>
 
 <h2 id=Binding_List><a href=#Binding_List>Binding List</a></h2>
 
-<p>There is a global binding list, populated by <code>OD.bind()</code>; there is a local binding list for every thread, populate by <code>OD.Local.bind()</code>.</p>
-<p>Every lookup first checks the local bindings, then the global bindings.</p>
-<p>last wins</p>
+<p>Now, let's give a formal description of how <strong><code>OD</code></strong> works.</p>
+<p>A <a href="javadoc/bayou/od/OD.Binding.html"><code>Binding</code></a> is an arbitrary mapping of <code>(type,tags)-&gt;supplier</code>. A binding is <em>applicable</em> to a particular <code>(type,tags)</code> if it's mapped to a non-null supplier.</p>
+<p>There is a <em>global</em> binding list, populated by <a href="javadoc/bayou/od/OD.html#bind-bayou.od.OD.Binding-"><code>OD.bind()</code></a>.</p>
+<p>There is a <em>local</em> binding list per thread, managed by <a href="http://localhost:8080/od/1.0.0/javadoc/bayou/od/OD.Local.html"><code>OD.Local</code></a>.</p>
+<p>For each lookup on <code>(type,tags)</code>, the local binding list is checked first; if no applicable local binding is found, the global binding list is checked.</p>
+<p>A binding list is ordered; if there are multiple bindings applicable to a <code>(type,tags)</code>, the latest one is used.</p>
 
 <h2 id=Custom_Binding><a href=#Custom_Binding>Custom Binding</a></h2>
 
+<p>You can create a custom <a href="javadoc/bayou/od/OD.Binding.html"><code>Binding</code></a> that implements arbitrary binding strategy. For example,</p>
 <pre>
-OD.Binding binding = (type,tags)-&gt;{...}
+    // bind every class to its no-arg constructor, if there&#39;s one.
+
+    OD.Binding defaultBinding = new OD.Binding()
+    {
+        @Override
+        public &lt;T&gt; OD.Supplier&lt;? extends T&gt; map(ClassType&lt;T&gt; type, Object... tags)
+        {
+            Constructor&lt;T&gt; constructor;
+            try {
+                constructor = type.getTheClass().getConstructor();
+            } catch (Exception e) {
+                return null;
+            }
+
+            return ()-&gt;
+            {
+                try {
+                    return constructor.newInstance();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            };
+        }
+
+        @Override
+        public Set&lt;? extends Class&gt; getApplicableClasses()
+        {
+            return null;  // `null` means set of all classes
+        }
+    };
+
+    OD.bind(defaultBinding);
 </pre>
-<p>Tags are intended to be used as limited lookup keys, not arbitrary construction parameters. For example, instead of</p>
+
+<h3>Tags</h3>
+
+<p>Tags are not intended to be arbitrary construction parameters, even though you could do that in a custom binding.</p>
+<p>Tags are intended to be a limited set of lookup keys; typically, they should be compile time constants.</p>
+<p>For example, instead of doing something like</p>
 <pre>
-OD.get(Shoe.class, size, color)  // get a Shoe of size and color
+OD.get(Shoe.class, size, color)  // get a Shoe of any size and color
 </pre>
-<p>it's better to design it with a factory that takes the parameters</p>
+<p>it's better to redesign it with a factory that takes construction parameters</p>
 <pre>
 OD.get(ShoeMaker.class).make(size, color);
 </pre>
 
 <h2 id=Template_Binding><a href=#Template_Binding>Template Binding</a></h2>
 
+<p>When we do a binding like</p>
+<pre>
+OD.bind(Dao.class).to(MyDao.class);
+</pre>
+<p>where <code>Dao</code> and <code>MyDao</code> are generic</p>
+<pre>
+public class MyDao&lt;T&gt; implements Dao&lt;T&gt;
+{
+    ...
+</pre>
+<p>the binding is actually equivalent to multiple bindings of <code>Dao&lt;t&gt;</code> to <code>MyDao&lt;t&gt;</code>, for every type <code>t</code>. Therefore, if we do a lookup on <code>Dao&lt;Cat&gt;</code>, we'll get a <code>new MyDao&lt;Cat&gt;()</code>.</p>
 
-<h2 id=Why_OD><a href=#Why_OD>Why OD</a></h2>
-    
+<h3>Type args</h3>
+
+<p>The constructor of <code>MyDao</code> can accept parameters that represent the type arguments of the generic class</p>
+<pre>
+public class MyDao&lt;T&gt; implements Dao&lt;T&gt;
+{
+    public MyDao(Class&lt;T&gt; classT)
+    {
+        //System.out.println(classT);
+</pre>
+<p>When we do a lookup on <code>Dao&lt;Cat&gt;</code>, we'll get a <code>new MyDao&lt;Cat&gt;(Cat.class)</code>.</p>
+<p>For more details, see javadoc of <a href="javadoc/bayou/od/OD.BindingBuilder.html#to-java.lang.Class-"><code>bind(type).to(implClass)</code></a>.</p>
+<p>See also source code of <a href="https://github.com/zhong-j-yu/od/blob/master/src/bayou/od/TypeArgConstructor.java"><code>TypeArgConstructor</code></a> and <a href="https://github.com/zhong-j-yu/od/blob/master/src/bayou/od/ImplClassBinding.java"><code>ImplClassBinding</code></a>.</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<hr/>
+<center><strong><code>OD</code></strong></center>
+<p>&nbsp;</p>
+<p>&nbsp;</p>    
     
     </body>
     
