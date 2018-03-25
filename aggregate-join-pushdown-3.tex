@@ -1,0 +1,448 @@
+\documentclass[article]{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{relsize}
+
+\usepackage{parskip}
+\usepackage[title]{appendix}
+
+% \pagestyle{empty} % no headers or footers
+\setlength{\topmargin}{-.5in}
+\setlength{\textheight}{9in}
+\setlength{\oddsidemargin}{.125in}
+\setlength{\textwidth}{6.25in}
+
+\newcommand{\ec}{{\{\}}}
+\newcommand{\U}{\bigcup}
+\newcommand{\ag}[1]{\overline{#1}}
+\newcommand{\LL}{^\mathsmaller{\mathsmaller L}}
+\newcommand{\RR}{^\mathsmaller{\mathsmaller R}}
+\newcommand{\EA}{\tilde{A}}
+
+
+\newcommand{\ga}[1]{{}^{\mathsmaller{\underline{#1}}}\kern -3pt}
+\newcommand{\gai}{{}^{\mathsmaller{\dagger}}\kern -3pt}
+
+\def\ojoin{\setbox0=\hbox{$\bowtie$} \rule[-.02ex]{.25em}{.4pt}\llap{\rule[\ht0]{.25em}{.4pt}}}
+\def\loj{\mathbin{\ojoin\mkern-5.8mu\bowtie}}
+
+
+\begin{document}
+
+\title{ Aggregate Join Pushdown}
+\author{Zhong Yu}
+\maketitle
+
+A SQL aggregate over a join may be transformed such that some aggregation work is 
+pushed down under the join, possibly reducing execution cost.
+
+This article demonstrates and proves a way to do it for any type of aggregate, grouping,
+join condition, and join type (semi, anti, inner, outer).
+It is based on the fact that joins can be expressed as unions and products,
+and aggregations can be pushed down over unions and products.
+
+\section{ Basic Notations and Formulas  }
+
+
+\subsection { set and duplicate rows }
+In this article, we'll use set notations to represent tables and operations on tables.
+It's understood that every row has an invisible marker that distinguish itself
+from any other row, even if they have the same values in all columns.
+No ``deduplication'' is done unless explicitly specified.
+
+\subsection{ distinct and non-distinct }
+
+In this article, when comparing column values, 
+we never invoke the concept of `equality'.
+Instead, we only use `distinct', `not-distinct' as defined in SQL Standard,
+{\it and} only among values in the same type.
+When we use the terms `=', `same', `match', `contain', we mean it in the sense of `not-distinct'.
+
+Row $r_1$ contains row $r_2$, if $r_1$ has all the columns of $r_2$,
+and their values are the same in these columns.
+
+Filter $\delta_r$ selects rows that contain $r$.
+\subsection{ special tables }
+
+$\O$ is an empty table whose schema depends on the context.
+
+$\o$ is used to represent empty set of other stuff, depending on the context.
+
+$I_r := \{r\}$ is a table with one row, $r$ .
+
+$N^C$ is the table of columns $C$ with exactly one row filled with null values in all columns.
+This is used in outer joins. 
+ 
+
+$\Gamma^C$ is the table of columns $C$, containing all possible distinct values (including nulls).
+   For example, if $C$ consists of two boolean columns, $\Gamma^C$ will have $3*3$ rows;
+   each row is a distinct combination of nullable values of $C$.
+For an empty set of columns, $\Gamma^{\o}$  consists of 1 row of zero columns.
+
+In  places that expects a column set, we may also put in a table or an operator
+to imply the columns of. For example, $N^T$ implies columns of table $T$, 
+$\Gamma^A$ implies columns of result of aggregate $A$.
+
+\subsection{ aggregate and group-by }
+
+An aggregate $A$ applied on a table $T$, as $AT$, produces a table with exactly one row.
+This corresponds to SQL aggregation without a group-by clause.
+
+Define $\EA$ as the same as $A$, except, when applied on an empty table, it produces zero rows:
+$$\EA \O = \O ; \quad \EA T = AT \text{\,\,when\,\,} T\neq\O$$
+
+An aggregate $A$ applied on a table $T$ {\it partitioned} by a set of columns $G$
+, as $\ag{AG} T$, is defined as
+\begin{align}
+ \ag{AG} T := \U_{g\in \Gamma^G} I_g \times \EA \delta_g T
+\end{align}
+
+When $G$ is not empty, this definition corresponds to SQL's concept of {\it group-by}, that is,
+for every $g$ contained by one or more rows in $T$, apply $A$ on these rows;
+ and then, $g$ is attached to the result.
+
+When $G$ is empty, $G=\o$, there is only one $g$ in $\Gamma^G$, and $\delta_g = \sigma_{true}$,
+therefore $\ag{A\o}T=\EA T$. 
+This has no direct correspondence in SQL Standard;
+in particular, it does not correspond to {\tt `group by ()'}, which always produces one group,
+even if the table is empty; same as the case without a group-by clause.
+
+{\bf 1.4.1}) Later, we will prove formulas in the form of $\ag{A G} T_1 = \ag{A^+ G} T_2$ ,
+true for any $G$. 
+We can deduce that $\ag{A \o} T_1 = \ag{A^+ \o} T_2 
+\to \EA T_1 = \EA^+ T_2 \to A T_1 = A^+ T_2$ (see section 1.5).
+Therefore, we are proving the case of group by any set of columns, 
+including {\tt `group by ()'} .
+However, that's only on the outside; 
+inside $T_2$ there may be $\ag{A_3 \o} T_3$ which we have to beware.
+
+\begin{quote}
+Interestingly, in Oracle and MS SQL, the behavior of {\tt `group by ()'} follows 
+our definition of $\ag{A\o}T$, and is different from the case of without group-by. 
+Our proofs also cover all grouping cases in their dialect.
+\end{quote}
+
+{\bf 1.4.2}) While $\ag{A\o}T$ has no direct correspondence in standard SQL,
+it can be easily simulated; one way is to translate it to
+group by a constant value, for example, 
+{\tt `group by (x-x)'} , which seems to work consistently across major databases.
+
+
+\subsection{ aggregate over union  }
+
+Every aggregate $A$ over unions can be expressed as
+\begin{align}
+A\U_i T_i = A^+ \U_i A' T_i  
+\end{align}
+
+{\it This can always be done; in the worst case, $A'$ can retain all the rows. }
+
+Note that $A\O = A^+ \O$, which is needed to prove (1.4.1).
+
+It's easy to prove that, 
+\begin{align}
+ \EA \U_i T_i = \EA^+ \U_i \EA' T_i  
+\end{align}
+
+
+\subsection{ aggregate over product }
+
+Every aggregate $A'$ over a product can be expressed as
+\begin{align}
+ A'(L \times R) = a^*( A\LL L \times A\RR R )
+\end{align}
+
+where $a^*$ is a generalized projection.
+
+{\it This can always be done; in the worst case, $A\LL$ and $A\RR$ can retain all the rows.}
+
+It's easy to see that
+\begin{align}
+ \EA' (L \times R) = a^*( \EA\LL L \times \EA\RR R )
+\end{align}
+
+\subsubsection{on null row}
+
+For outer joins, we need to have the property of
+\begin{align} A\LL N\LL = N^{A\LL}  ,\quad A\RR N\RR = N^{A\RR}  \tag{1.6} \end{align}
+that is, $A\LL, A\RR$ applying on an all-null row produces an all-null row.
+For many aggregates, this is naturally true, e.g. {\tt sum(x)} .
+It is not always true though, e.g. {\tt count(*)} .
+
+Fortunately, we have the freedom of choice of $a^*, A\LL, A\RR$;
+and we can always find such operators that satisfies (4) and (1.6).
+If we already have $A'(L \times R) = b^*( B\LL L \times B\RR R )$, 
+define a permutation function $f_L$ on $\Gamma^{B\LL}$
+such that $f_L B\LL N\LL = N^{B\LL}$ ;
+define $A\LL L := f_L B\LL L$ ;
+define $a^*(a\LL \times a\RR) := b^*(f_L^{-1}a\LL \times f_R^{-1}a\RR)$ .
+We can verify that $a^*, A\LL, A\RR$ satisfies (4) and (1.6).
+
+\section{ Inner Join }
+
+Every inner join with condition $\theta$ that references columns $K$ can be expanded as
+\begin{align}
+  L \bowtie _\theta R = \U_{k\in \sigma_\theta \Gamma^K} \delta_k (L \times R)
+\end{align}
+that is, we enumerate every $k$ that satisfies $\theta$, and pick out rows
+in $L\times R$ that match $k$. 
+
+Every $k$ consists of $k\LL$ and $k\RR$, and
+$
+  \delta_k (L \times R) =  \delta_{k\LL} L \times \delta_{k\RR} R
+$ , thus, 
+\begin{align}
+L \bowtie _\theta R = \U_{k} \delta_{k\LL} L \times \delta_{k\RR} R
+\end{align}
+
+We want to prove that the following two expressions are equivalent
+\begin{align}
+E_1 :=& \ag{AG} (L \bowtie_\theta R)  \\
+E_2 :=& \ag{A^+ G} a^* (\ag{A\LL P\LL} L \bowtie_\theta \ag{A\RR P\RR} R) 
+\end{align}
+where $P\LL \supseteq G\LL \cup K\LL $, 
+i.e. $P\LL$ contains L-side columns of $G$ and $K$ .
+
+
+Let's expand $E_2$ first.
+Every $g$ in $\Gamma^G$ consists of $g\LL$ and $g\RR$, and
+\begin{align}
+  \delta_g (L \times R) =  \delta_{g\LL} L \times \delta_{g\RR} R
+\end{align}
+
+
+Apply (7, 1, 10) to $E_2$ (9)
+
+\begin{align}
+  E_2 = \U_g I_g \times \EA^+ a^*  \U_{k,p\LL,p\RR} (\delta_{g\LL} \delta_{k\LL} 
+  I_{p\LL} \times \EA \LL \delta_{p\LL} L) \times (...R)
+\end{align}
+
+For $E_1$, we need to expand $L$ with $P\LL$ to match the form of (11).
+ \begin{align}
+ L = \U_{p\LL \in \Gamma^{P\LL}} \delta_{p\LL} L
+ \end{align}
+
+Apply (1, 7, 12, 10) to $E_1$ (8)
+
+\begin{align}
+  E_1 = \U_g I_g \times \EA  \U_{k,p\LL,p\RR} (\delta_{g\LL} \delta_{k\LL} \delta_{p\LL} L) \times (...R)
+\end{align}
+
+Apply (3, 5)
+\begin{align}
+  E_1 = \U_g I_g \times \EA^+ a^*  \U_{k,p\LL,p\RR} (\EA \LL \delta_{g\LL} \delta_{k\LL} \delta_{p\LL} L) \times (...R)
+\end{align}
+
+Compare (14) to (11), we are missing a term $I_{p\LL}$ . 
+Since $a^*$ only operates on columns of $A\LL$, $A\RR$, 
+it is harmless to introduce more columns to $a^*$'s operands with any value, e.g. ${p\LL}$ .
+\begin{align}
+  E_1 = \U_g I_g \times \EA^+ a^*  \U_{k,p\LL,p\RR} (
+  I_{p\LL} \times \EA \LL \delta_{g\LL} \delta_{k\LL} \delta_{p\LL} L) \times (...R)
+\end{align}
+
+Compare (15) to (11), we need to prove that
+\begin{align}
+  \delta_{g\LL} \delta_{k\LL}  I_{p\LL} \times \EA \LL \delta_{p\LL} L
+ =  I_{p\LL} \times \EA \LL \delta_{g\LL} \delta_{k\LL} \delta_{p\LL} L
+\end{align}
+If $p\LL$ contains both $g\LL$ and $k\LL$, 
+both sides become $I_{p\LL} \times \EA \LL \delta_{p\LL} L$ ;
+otherwise, both sides become $\O$ .
+
+Therefore, we proved that $E_1 = E_2$
+\begin{align}
+\ag{AG} (L \bowtie_\theta R)  = 
+ \ag{A^+ G} a^* (\ag{A\LL P\LL} L \bowtie_\theta \ag{A\RR P\RR} R) 
+\end{align}
+
+Refer to  (1.4.1), this also implies that (with $G\LL=G\RR=\o$)
+\begin{align}
+A (L \bowtie_\theta R)  = 
+A^+ a^* (\ag{A\LL P\LL} L \bowtie_\theta \ag{A\RR P\RR} R) 
+\end{align}
+
+\subsection{in SQL}
+
+Translate the finding to SQL, 
+
+\texttt{ select $A$ from $L$ inner join $R$ on $\theta(K)$ group by $G$}
+
+is equivalent to
+
+\texttt{ select $A^+ a^*$ from $L'$ inner join $R'$ on $\theta(K)$ group by $G$}
+
+with 
+
+\texttt{ $L'$ := select $A\LL$, $P\LL$ from $L$ group by $P\LL$ }
+
+as long as $P\LL$ and $P\RR$ are not empty.
+
+If $P\LL$ is empty, $K\LL$ is empty too; this is a pathological join, rare in practice.
+In this case, we cannot translate $\ag{A\LL P\LL}$  to SQL's {\tt `group by ()'} ; 
+but it could be implemented in SQL as mentioned in (1.4.2) 
+
+\section{ Semi Join and Anti Join }
+
+Every semi join with condition $\theta$ can be expressed as 
+\begin{align}
+L  \ltimes _\theta R = \U_{k \in \Upsilon(\theta, R)} \delta_{k} L  
+\end{align}
+where $\Upsilon(\theta, R) := \Gamma^{K\LL} \ltimes_\theta R$. 
+Note that it depends on $\theta$ and values in $R$, but not on values in $L$.
+We enumerate every $k$ of $K\LL$ that satisfies $\theta$ with a row in $R$, and pick out rows
+in $L$ that match $k$. 
+
+Anti join $\rhd_\theta$ is very similar to semi join; the only difference is the set of $k$;
+the rest of the deductions are exactly the same, 
+therefore same conclusions apply.
+
+
+We want to prove that the following two expressions are equivalent
+\begin{align}
+E_1 :=& \ag{A G} (L \ltimes_\theta R)  \\
+E_2 :=& \ag{A^+ G} (\ag{ A' P} L \ltimes_\theta R)
+\end{align}
+where $P \supseteq G \cup K\LL $ .
+Note that aggregation and grouping is done on $L$ side only.
+
+The proof is similar to, and simpler than, the inner join case.
+
+Apply (19, 12, 1) to $E_2$ (21)
+
+\begin{align}
+E_2 = \U_g I_g \times \EA^+ \U_{k,p}
+\delta_g \delta_k I_p \times \EA' \delta_p L
+\end{align}
+
+Apply (19, 12, 1) to $E_1$ (20),
+\begin{align}
+E_1 = \U_g I_g \times \EA \U_{k,p} \delta_g \delta_k \delta_p L
+\end{align}
+
+Apply (3), 
+\begin{align}
+E_1 = \U_g I_g \times \EA^+ \U_{k,p} \EA' \delta_g \delta_k \delta_p L
+\end{align}
+
+Compare (24) to (22), we are missing a term $I_{p}$ . 
+Since $A^+$ only operates on columns of $A'$,
+it is harmless to introduce more columns to $A^+$'s operand with any value, e.g. ${p}$ .
+
+\begin{align}
+E_1 = \U_g I_g \times \EA^+ \U_{k,p} I_p \times \EA' \delta_g \delta_k \delta_p L
+\end{align}
+
+Compare (25) to (22), similar to the inner join case, it's true that
+\begin{align}
+  \delta_{g} \delta_{k}  I_{p} \times \EA'  \delta_{p} L
+ =  I_{p} \times \EA'  \delta_{g} \delta_{k} \delta_{p} L
+\end{align}
+
+Therefore $E_1 = E_2$, 
+\begin{align}
+\ag{A G} (L \ltimes_\theta R)  
+= \ag{A^+ G} (\ag{ A' P} L \ltimes_\theta R)
+\end{align}
+
+\section{ Outer Join }
+
+We can think of outer join as combination of inner join and anti join.
+For left-outer join,
+\begin{align}
+L \loj_\theta R = \quad L \bowtie_\theta R \quad\cup\quad  (L \rhd_\theta R) \times N\RR
+\end{align}
+
+We want to prove that the following two expressions are equivalent
+\begin{align}
+E_1 :=& \ag{AG} (L \loj_\theta R)  \\
+E_2 :=& \ag{A^+ G} a^* (\ag{A\LL P\LL} L \loj_\theta \ag{A\RR P\RR} R) 
+\end{align}
+
+Using the same tactics as before, the join is expanded to unions of products,
+and aggregation is pushed down under unions and products,
+through which we can prove that $E_1 = E_2$.
+There might be better methods, but here is the ugly expansion:
+
+\begin{align*}
+  E_1 = \U_g I_g \times \EA^+ a^*  \left(
+  \U_{j_1, p\LL} (I_{p\LL}\times\EA\LL\delta_{g\LL}\delta_{j_1}\delta_{p\LL}L)
+  \times(N^{P\RR}\times\EA\RR \delta_{g\RR}N\RR)  
+  \quad\cup \U_{k,p\LL,p\RR} (
+  I_{p\LL} \times \EA \LL \delta_{g\LL} \delta_{k\LL} \delta_{p\LL} L) \times (...R)\right) 
+\end{align*}
+
+\begin{align*}
+  E_2 = \U_g I_g \times \EA^+ a^*  \left(
+  \U_{j_2, p\LL} (\delta_{g\LL}\delta_{j_2}I_{p\LL}\times\EA\LL\delta_{R\LL}L)
+  \times(\delta_{g\RR}N^{\ag{A\RR P\RR}})  
+  \quad\cup \U_{k,p\LL,p\RR} (\delta_{g\LL} \delta_{k\LL} 
+  I_{p\LL} \times \EA \LL \delta_{p\LL} L) \times (...R)\right)
+\end{align*}
+
+where 
+$$ 
+j_1 \in \Gamma^{k\LL} \rhd_\theta R ,  \quad
+j_2 \in \Gamma^{k\LL} \rhd_\theta \ag{A\RR P\RR} R
+$$
+It's intuitive that $j_1 , j_2$ range over the same set.
+
+Based on (1.6), the two terms involving $N$ also match.
+At this point, we reached $E_1 = E_2$ .
+
+
+
+The case of full-outer join can be proven in the same way.
+
+Actually,  all types of joins -- inner, semi/anti, left/right/full-outer --
+can be handled in a unified way. 
+However, proving it in a unified framework 
+is even more complex, therefore we break it down to individual types
+for ``easier'' grasp.
+An attempt was made to prove it for binary operators of a more abstract structure,
+but it is also full of deltas, partitions, crosses, and unions.
+
+\section{ Conclusion }
+
+Given any aggregate $A$, we can find $A', a^*, A\LL, A\RR$ 
+that satisfies (2), (4) and (1.6) . 
+When $A$ is applied on any join with any condition with any grouping,
+it can be transformed to an equivalent expression
+where $A', A\LL, A\RR$ are pushed down under the join.
+
+
+Whether such transformation is profitable is left to practical concerns.
+
+
+\begin{appendices}
+
+
+
+\end{appendices}
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
