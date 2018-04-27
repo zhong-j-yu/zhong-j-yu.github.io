@@ -1,0 +1,51 @@
+Derive Additional Filters
+
+In org.apache.calcite.rel.rules.FilterJoinRule, 
+there's the following comment
+
+    // TODO - add logic to derive additional filters.  E.g., from
+    // (t1.a = 1 AND t2.a = 2) OR (t1.b = 3 AND t2.b = 4), you can
+    // derive table filters:
+    // (t1.a = 1 OR t1.b = 3)
+    // (t2.a = 2 OR t2.b = 4)
+
+When perf-testing TPC-H/DS queries, we found that such additional filters
+would have been very profitable in several cases.
+
+Has anybody worked on this issue or is there already a util to that effect?
+
+The following algorithm is what I am thinking; please comment if interested.
+
+Given a predicate p, we want to derive an implied predicate q, i.e. p->q,
+and q only references columns on a specified side of a join. Then we can
+transform p to AND(p, q); q will be pushed down at a later stage.
+
+Since we are dealing with 3-value booleans, we need to be very careful.
+To be precise, we need a function T(p) which returns a predicate such that
+for any row, if p evaluates to TRUE, T(p) must also evaluate to TRUE.
+To handle NOT, we also need a function F(p) such that for any row,
+if p evaluates to FALSE, F(p) must also evaluate to FALSE.
+
+T(p) can be defined as such --
+
+T( p ) => p, if p only references a specified side of a join
+T( OR(a,b) ) => OR(T(a), T(b))
+T( AND(a,b) ) => AND(T(a), T(b))
+T( NOT(p) ) => NOT( F(p) )
+T( p ) => TRUE, for all other cases, as the fallback
+
+// not a present concern, but more rules can be plugged into T(p) if
+// desired in some applications, e.g. T( x*x+y*y<100 ) => x*x<100
+
+F(p) is defined similarly --
+
+F( p ) => p, if p only references a specified side of a join
+F( OR(a,b) ) => OR(F(a), F(b))
+F( AND(a,b) ) => AND(F(a), F(b))
+F( NOT(p) ) => NOT( T(p) )
+F( p ) => FALSE, for all other cases, as the fallback
+
+We can unify T(p) and F(p) as one function X(v,p), where v is TRUE/FALSE.
+For any row, if p evaluates to v, then X(v,p) also evaluates to v.
+
+(The case of UNKNOWN seems very difficult, I'm not considering it here.)
