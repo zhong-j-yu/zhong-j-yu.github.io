@@ -3,71 +3,179 @@
   <head>
     <meta charset="utf-8">
     <title>Zhong Yu</title>
-    <link rel="stylesheet" href="/site.css">
+    <style>
+body{
+  width: 550px;
+  margin: 1em auto 1em auto;
+  padding: 1em;
+
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  color:#000;
+
+  border: 1px solid black;
+  box-shadow: 4px 4px 6px #aaa;
+}
+hr{
+  border: none;
+  border-top: 1px solid black;
+}
+a{
+  color: #00f;
+  text-decoration: none;
+}
+a:visited{
+  color: #00f;
+}
+div{
+}
+ul{
+  padding-left: 1.4em;
+li{
+  margin-bottom: 0.2em;
+}
+i{
+  color:#444;
+}
+    </style>
   </head>
+
+
   <body>
-    <h1>Zhong Yu</h1>
-    
-    <p><i>Java and Web programmer</i></p>
-    
-    <p>
-        resume: 
-        <a href="ZhongYu.resume.pdf">PDF</a> ,
-        <a href="ZhongYu.resume.html">HTML</a>
-    </p>
 
-    <p> email: <a href="mailto:zhong.j.yu@gmail.com">zhong.j.yu@gmail.com</a>
+    <a href="./zhongyu-2.png" style="margin-left:1em; float:right;">
+      <img src="./zhongyu-1.png" title="Houston, TX" style="border-radius: 5px;"/>
+    </a>
 
-    <p>
-      <a href="https://github.com/zhong-j-yu">github</a>
-      |
-      <a href="https://www.linkedin.com/in/zhong-yu-937ab3202/">linkedin</a>
-      |
-      <a href="https://stackoverflow.com/users/2158288/zhongyu">stackoverflow</a>
-    </p>
-    
-    <p>
-    </p>
-  
-    <hr>
-    
-    <p><b>open source</b></p>
-    
-    <p>
-      <a href="https://github.com/zhong-j-yu/rekex">Rekex</a>
-      - PEG parser generator, grammar as algebraic datatypes
-    </p>
-    
-    <p>
-      <a href="https://github.com/zhong-j-yu/rekex/blob/main/doc/RegExp.md">RegExp</a>
-      - structured regular expression
-    </p>
+    <div style="text-align:center;">
+      <h2>Zhong Yu</h2>
+      <p><i>a pretty good Java programmer</i></p>
+    </div>
+    <hr/>
 
-    <p>
-        <a href="http://bayou.io">bayou.io</a> - async HTTP server and client
-    </p>
+    <div>
+      <h3>hire me</h3>
+      <ul>
+        <li>
+          <a href="ZhongYu.resume.pdf">ZhongYu.resume.pdf</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/in/zhong-yu-937ab3202/">LinkedIn</a>
+          ...
+          <a href="https://github.com/zhong-j-yu">GitHub</a>
+          ...
+          <a href="https://stackoverflow.com/users/2158288/zhongyu">StackOverflow</a>
+        </li>
+      </ul>
+    </div>
+    <hr/>
 
-    <p>
-      <a href="https://github.com/zhong-j-yu/react-subpage">subpage</a> - conventional client-side router for React
-    </p>
+    <div>
+      <h3>open source</h3>
+      <ul>
+        <li>
+          <a href="https://github.com/zhong-j-yu/rekex">rekex.org</a>
+          - PEG parser generator, grammar as algebraic datatypes
+        </li>
+        <li>
+          <a href="https://github.com/zhong-j-yu/rekex/blob/main/doc/RegExp.md">RegExp</a>
+          - Structured regular expression
+        </li>
+        <li>
+          <a href="http://bayou.io">bayou.io</a>
+          - Async HTTP server/client, high performance in functional style
+        </li>
+        <li>
+          <a href="https://github.com/zhong-j-yu/react-subpage/blob/master/doc/Document.md">subpage</a>
+          - ReactJs router, simple API, flexible navigation models
+        </li>
+        <li>
+          <a href="http://zhong-j-yu.github.io/od/1.0.0/index.html">OD</a>
+          - Service Locator library, with multiple binding/lookup strategies
+        </li>
+      </ul>
+    </div>
+    <hr/>
 
-    <p>
-        <a href="http://zhong-j-yu.github.io/od/1.0.0/index.html">OD</a>  - a simple Service Locator library
-    </p>
-    
-    <p>
-        <a href="http://zhong-j-yu.github.io/od/1.0.0/javadoc/bayou/jtype/package-summary.html">jtype</a> - java types lib
-    </p>
-    
-    <hr>
-    
-    <p>
-      <a href="http://bayou.io/draft/index.html">articles</a>
-    </p>
-    <p>
-      <a href="https://groups.google.com/forum/#!forum/java-lang-fans">java language discussion</a>
-    </p>
-    
-    
+    <div>
+      <h3>articles</h3>
+      <ul>
+        <li>
+          <a href="https://github.com/zhong-j-yu/rekex/blob/main/doc/Intro.md">Rekex, the simplest parser generator</a>
+          <br/><i>unify grammar definition and AST construction in simple Java code</i>
+        </li>
+        <li>
+          <a href="http://zhong-j-yu.github.io/aggregate-join-pushdown-3.pdf">Aggregate Join Pushdown</a> <small>(PDF)</small>
+          <br/><i>transform any form of join-group-aggregate for SQL query optimizers</i>
+        </li>
+        <li>
+          <a href="http://bayou.io/draft/In_Defense_of_Service_Locator.html">In Defense of Service Locator</a>
+          <br/><i>comprehensive and in-depth analysis of Service Locator vs Dependency Injection</i>
+        </li>
+        <li>
+          <a href="http://bayou.io/draft/Capturing_Wildcards.html">Capturing Wildcards</a>
+          <br/><i>everything there is to know about wildcards in Java Generics</i>
+        </li>
+        <li>
+          <a href="http://bayou.io/draft/cookie.domain.html">Cookie Domain</a>
+          <br><i>the definitive guide to HTTP Cookie domain and public suffix</i>
+        </li>
+        <li>
+          <a href="http://bayou.io/draft/Comparing_Java_HTTP_Servers_Latencies.html">Comparing Java HTTP Servers' Latencies</a>
+        </li>
+      </ul>
+    </div>
+
+    <script>
+      function showMisc(){
+        document.getElementById("misc1").style.display="none";
+        document.getElementById("misc2").style.display="block";
+      }
+    </script>
+    <div id="misc1" style="text-align:right;"><a href="javascript:showMisc()">...</a></div>
+    <div id="misc2" style="display:none;">
+      <hr/>
+      more articles:
+      <ul>
+        <li>
+          <a href="http://bayou.io/draft/Wildcard_Case_Studies.html">Wildcard Case Studies</a>
+          <br/><i>interesting case studies of Java Generics Wildcard</i>
+        </li>
+        <li>
+          <a href="http://bayou.io/draft/websocket.api.html">Should WebSocket Server API Be Event Based</a>
+          <br/><i>WebSocket API should be designed like traditional socket API</i>
+        </li>
+        <li>
+          <a href="http://bayou.io/draft/response.style.html">Don't give me an http response; I'll give you one</a>
+          <br/><i>server side should treat response as a source, instead of a sink</i>
+        </li>
+      </ul>
+      misc
+      <ul>
+        <li>
+          <a href="https://groups.google.com/forum/#!forum/java-lang-fans">
+            java.lang.fans
+          </a>
+          <i>- intricate details of Java language</i>
+        </li>
+        <li>
+          contributor to <a href="https://tools.ietf.org/html/rfc6455">RFC-6455</a> (WebSocket),
+          <a href="https://tools.ietf.org/html/rfc7230">RFC-7230</a> (HTTP/1.1)
+        </li>
+        <li>
+          <a href="mailto:zhong.j.yu@gmail.com">zhong.j.yu@gmail.com</a>
+        </li>
+        <li>
+          residence: Houston, TX, USA
+        </li>
+      </ul>
+      <div style="text-align:right;">
+        <a href="">https://zhong-yu.org</a>
+      </div>
+    </div>
+<!--    <script> showMisc(); </script>-->
+
+
   </body>
 </html>
