@@ -1,138 +1,204 @@
 <!DOCTYPE html>
 <html>
+
+<!--
+    Firefox > Print > Save to PDF
+        Paper size: US Letter
+        Scale: 100
+        Margins: None
+
+    US Letter: 8.5x11 inch. 816x1056 pixel. 1 inch = 96 pixel.
+-->
+
 <head>
-    <title>Zhong Yu</title>
+    <title>ZhongYu.resume</title>
     <style>
+        #paper{ /* outline of US Letter size */
+            position:absolute;
+            left:0px;
+            top:0px;
+            width:816px;
+            height:1056px;
+            z-index:-1;
+            box-shadow: 4px 4px 4px #aaa;
+        }
         body {
-            font-family: Arial;
-            font-size: 18px;
-            margin-left: 2em;
-            padding-top: 2em;
-            padding-bottom: 2em;
-            width:42em;
+            width: 716px;
+            margin: 0;
+            padding: 50px;
+            font-family: Garamond;
+            font-size: 11pt;
         }
         a {
             color:blue;
+            text-decoration: none;
         }
         h2 {
             font-weight: 100;
             border-bottom: 1px solid #aaa;
+            margin: 10px 0 10px 0;
+        }
+        ul {
+            margin: 4px 0 4px 0;
+            list-style-type: circle;
+            padding-left: 30px;
         }
         li {
-            margin-bottom: 3px;
         }
-        .c1 {
-            margin-left: 26px;
-            display: inline-block;
-            width: 120px;
+        p{
+            margin: 14px 0 10px 0;
+        }
+        .company{
             font-size: 120%;
             font-weight: bold;
+            padding-right: 40px;
         }
-        .c2 {
-            display: inline-block;
-            width: 400px;
+        .job{
+            font-family: Calibri;
+            font-weight: bold;
+            font-style: italic;
         }
-        .c3 {
-            display: inline-block;
-            width: 200px;
-            text-align: right;
+        .years{
+            float:right;
+            margin-right: 1em;
+        }
+        .city{
+            float:right;
+            margin-right: 2em;
         }
 
+        table#edu tr td:nth-child(2) {
+            padding-left: 5px;
+            font-weight: bold;
+            text-align: center;
+        }
+        table#edu tr td:nth-child(4) {
+            font-weight: bold;
+        }
+        table#edu tr td:nth-child(5) {
+            padding: 0 1em 0 1em;
+        }
+        .openSource{
+            float: left;
+            display: inline-block;
+            font-family: Arial;
+            width: 70px;
+        }
+        #contact{
+            font-family:Arial;
+            border-bottom: 1px solid #bbb;
+            border-top: 1px solid #bbb;
+            padding-top:2px;
+            padding-bottom:3px;
+        }
     </style>
 </head>
 
 <body>
 
-<h1 style="text-align: center; padding-top:10px;">Zhong Yu</h1>
-<p style="text-align: left;">
-    <span style="margin-left:0em">(408) 375-8481</span>
-    <span style="margin-left:1em"><a href="mailto:zhong.j.yu@gmail.com">zhong.j.yu@gmail.com</a></span>
-    <span style="margin-left:1em"><a href="https://www.linkedin.com/in/zhong-yu-937ab3202">https://www.linkedin.com/in/zhong-yu-937ab3202</a></span>
-    <span style=""></span>
+<div id="paper"></div>
+
+<h1 style="text-align: center; margin-bottom: 10px;"><big>Z</big>HONG <big>Y</big>U</h1>
+
+<p id="contact">
+    <span style="margin-left:4px">(408)375-8481</span>
+    <span style="margin-left:188px"><a href="https://zhong-yu.org">https://zhong-yu.org</a></span>
+    <span style="margin-left:134px"><a href="mailto:zhong.j.yu@gmail.com">zhong.j.yu@gmail.com</a></span>
 </p>
 
-<h2>Summary</h2>
-<ul>
-    <li>
-        Java, Javascript, database, network, big data, data streaming
-    </li>
-    <li>
-        Architecture and API design, problem solving, team working, client facing
-    </li>
+<ul style="margin-top:14px;">
+    <li>Extensive knowledge in Java ecosystem, RDBMS, concurrency, distributed systems, internet technologies.</li>
+    <li>Strong analytic and problem solving skills, detail-oriented, practical-minded. Curious and creative.</li>
+    <li>Honor-bound, take pride and ownership in my own work, try to impress, always deliver. Enjoy teamwork.</li>
 </ul>
 
-<h2>Employments</h2>
+<h2>Experience</h2>
 
 <p>
-    <span class="c1"><a href="https://www.alibabagroup.com/en/global/home">Alibaba</a></span>
-    <span class="c2">Technical Expert</span>
-    <span class="c3">2017 - 2018</span>
+    <span class="years">2010 - 2020</span>
+    <span class="city">Houston, TX</span>
+    <span class="company">Freelance</span>
+    <span class="job">Application Developer</span>
 </p>
 <ul>
     <li>
-        Working on Apache Flink's SQL Query Processing module
+        Developing and maintaining websites and desktop applications for clients.
     </li>
     <li>
-        Analyzing and enforcing standard-compliance;
-        implemented full support for Decimal type
-    </li>
-    <li>
-        Improving TPC benchmarks; invented new transformation rules in the query optimizer
+        Collecting, analyzing, and presenting business data for clients.
     </li>
 </ul>
 
 <p>
-    <span class="c1">Freelancer</span>
-    <span class="c2"></span>
-    <span class="c3">2008 - 2017</span>
+    <span class="years">2017 - 2018</span>
+    <span class="city">Hangzhou, China</span>
+    <span class="company">Alibaba Group</span>
+    <span class="job">Technical Expert</span>
 </p>
 <ul>
     <li>
-        Developing and maintaining websites for multiple clients
+        Worked on Apache Flink's SQL Query Processing module
+        to add features and fix issues.
     </li>
     <li>
-        Collecting, analyzing, and presenting business data
+        Established a theoretical framework to transform any join-group-aggregate queries
+        for aggregate pushdown.
+    </li>
+    <li>
+        Improved data warehouse TPC benchmarks; invented new transformation rules in the query optimizer.
+    </li>
+    <li>
+        Analyzed and enforced SQL standard-compliance.
+        Implemented full support for SQL Decimal type.
     </li>
 </ul>
 
 <p>
-    <span class="c1"><a href="https://www.atypon.com/">Atypon</a></span>
-    <span class="c2">Senior Software Engineer</span>
-    <span class="c3">2001 - 2008</span>
+    <span class="years">2001 - 2008</span>
+    <span class="city">Santa Clara, CA</span>
+    <span class="company">Atypon Systems</span>
+    <span class="job">Senior Software Engineer</span>
 </p>
 <ul>
     <li>
-        Created a workflow system, including language, compiler, engine, and admin interface
+        Created a workflow system for document processing,
+        with a language, compiler, engine, and admin interface.
     </li>
     <li>
-        Created various frameworks, <i>e.g.</i> persistence, caching, and clustering
+        Created various backend frameworks, including proprietary ORM, caching, distributed consensus.
     </li>
     <li>
-        Responsible for site performance, scalability and availability
+        Create a system for clients to directly modify webpages, to version, stage, and publish their edits.
     </li>
     <li>
-        Implementing business features, <i>e.g.</i> identity management, access control, e-commerce
+        Maintained and improved website performance, scalability and availability.
     </li>
     <li>
-        Integrating with client systems through proprietary and industry standard protocols
+        Implemented various business features, particularly identity management, access control, e-commerce.
     </li>
     <li>
-        Working with clients to resolve issues, gather requirements, and write specifications
+        Integrated with client systems through numerous proprietary and industry standard protocols.
+    </li>
+    <li>
+        Worked directly with clients to resolve issues, gather requirements, and write specifications.
     </li>
 </ul>
 
-
 <p>
-    <span class="c1"><a href="http://www.fnal.gov/">Fermi Lab</a></span>
-    <span class="c2">Research Assistant</span>
-    <span class="c3">1998 - 2000</span>
+    <span class="years">1998 - 2000</span>
+    <span class="city">Batavia, IL</span>
+    <span class="company">Fermi National Accelerator Lab</span>
+    <span class="job">Research Assistant</span>
 </p>
 <ul>
     <li>
-        Frameworks and algorithms for real-time collider data streaming and analysis
+        Implemented frameworks and algorithms in C++ for real-time collider data streaming and analysis.
     </li>
     <li>
-        Collider magnetic field measurement, analysis, and programming interface
+        Wrote Labview applications for measurement of magnetic field in DØ collider detector.
+    </li>
+    <li>
+        Wrote Delphi applications to control lab machines, to acquire and analyze experimental data.
     </li>
     <!--
         <a href="https://www-d0.fnal.gov/~buescher/l3lessons/L3lesson18_frame.html"></a>
@@ -144,38 +210,48 @@
 <h2>Open Source</h2>
 <ul style="margin:10px 0 10px;">
     <li>
-        <a href="http://rekex.org">rekex.org</a> -
-        PEG parser generator, grammar as algebraic datatypes
+        <a href="http://rekex.org" class="openSource">rekex.org</a>
+        - PEG parser generator for Java 17,
+        grammar as algebraic datatypes.
     </li>
     <li>
-        <a href="http://bayou.io/">bayou.io</a> -
-        async HTTP server&client library and utilities
+        <a href="http://bayou.io/" class="openSource">bayou.io</a>
+        - Async HTTP server/client, high performance in functional style,
+        full-featured.
     </li>
     <li>
-        <a href="https://github.com/zhong-j-yu/react-subpage">subpage</a> -
-        a conventional client-side router for React.
-    </li>
-</ul>
-
-<h2>Miscellany</h2>
-<ul>
-    <li>
-        My <a href="http://stackoverflow.com/users/2158288/zhong-yu?tab=answers&sort=newest">stackoverflow</a>
-        and <a href="https://github.com/zhong-j-yu">github</a> profiles;
-        some of my <a href="http://bayou.io/draft/index.html">articles</a>
-    </li>
-    <li>
-        Contributor to <a href="https://tools.ietf.org/html/rfc6455">RFC-6455</a>
-        and <a href="https://tools.ietf.org/html/rfc7230">RFC-7230</a>
+        <a href="https://github.com/zhong-j-yu/react-subpage" class="openSource">subpage</a>
+        - ReactJs router, simple API, flexible navigation models.
     </li>
 </ul>
 
 <h2>Education</h2>
-<ul>
-    <li>2001 - MS in Computer Science - Loyola University Chicago</li>
-    <li>2000 - MS in Physics - Northwestern University</li>
-    <li>1997 - BS in Physics - Beijing University</li>
-</ul>
+<table id="edu">
+    <tr>
+        <td>2001</td>
+        <td>M.S.</td>
+        <td>in</td>
+        <td>Computer Science</td>
+        <td>Loyola University Chicago</td>
+        <td>Chicago, IL</td>
+    </tr>
+    <tr>
+        <td>2000</td>
+        <td>M.S.</td>
+        <td>in</td>
+        <td>Physics</td>
+        <td>Northwestern University</td>
+        <td>Evanston, IL</td>
+    </tr>
+    <tr>
+        <td>1997</td>
+        <td>B.S.</td>
+        <td>in</td>
+        <td>Physics</td>
+        <td>Peking University</td>
+        <td>Beijing, China</td>
+    </tr>
+</table>
 
 </body>
 </html>
