@@ -28,7 +28,7 @@
             margin: 0;
             padding: 50px;
             font-family: Garamond;
-            font-size: 11pt;
+            font-size: 12pt;
         }
         a {
             color:blue;
@@ -42,13 +42,13 @@
         ul {
             margin: 4px 0 4px 0;
             list-style-type: circle;
-            padding-left: 30px;
+            padding-left: 17px;
         }
         li {
-            margin: 2px 0 2px 0;
+            margin: 1px 0 1px 0;
         }
         p{
-            margin: 14px 0 10px 0;
+            margin: 15px 0 5px 0;
         }
         .company{
             font-size: 120%;
@@ -67,19 +67,33 @@
         .city{
             float:right;
             margin-right: 2em;
+            color: #333;
         }
 
-        table#edu tr td:nth-child(2) {
-            padding-left: 5px;
+        .edu_degree{
             font-weight: bold;
             text-align: center;
+            display: inline-block;
+            width: 32px
         }
-        table#edu tr td:nth-child(4) {
+        .edu_field{
             font-weight: bold;
+            display: inline-block;
+            width: 140px
         }
-        table#edu tr td:nth-child(5) {
-            padding: 0 1em 0 1em;
+        .edu_year{
+            display: inline-block;
+            width: 48px
         }
+        .edu_year{
+            display: inline-block;
+            width: 50px
+        }
+        .edu_univ{
+            display: inline-block;
+            width: 200px
+        }
+
         .openSource{
             float: left;
             display: inline-block;
@@ -100,16 +114,16 @@
 
 <div id="paper"></div>
 
-<h1 style="text-align: center; margin-bottom: 10px;"><big>Z</big>HONG <big>Y</big>U</h1>
+<h1 style="text-align: center; margin: 14px 0 8px 0;"><big>Z</big>HONG <big>Y</big>U</h1>
 
-<p id="contact">
+<p id="contact" style="margin-top:8px;">
     <span style="margin-left:4px">(408)375-8481</span>
-    <span style="margin-left:188px"><a href="https://zhong-yu.org">https://zhong-yu.org</a></span>
-    <span style="margin-left:134px"><a href="mailto:zhong.j.yu@gmail.com">zhong.j.yu@gmail.com</a></span>
+    <span style="margin-left:174px"><a href="https://zhong-yu.org">https://zhong-yu.org</a></span>
+    <span style="margin-left:115px"><a href="mailto:zhong.j.yu@gmail.com">zhong.j.yu@gmail.com</a></span>
 </p>
 
 <ul style="margin-top:14px;">
-    <li>Extensive knowledge in Java ecosystem, RDBMS, concurrency, distributed systems, internet technologies.</li>
+    <li>Extensive knowledge in Java ecosystem, RDBMS, concurrency, distributed system, internet technologies.</li>
     <li>Strong analytic and problem solving skills, detail-oriented, practical-minded. Curious and creative.</li>
     <li>Honor-bound, take pride and ownership in my own work, try to impress, always deliver. Enjoy teamwork.</li>
 </ul>
@@ -117,17 +131,17 @@
 <h2>Experience</h2>
 
 <p>
-    <span class="years">2010 - 2021</span>
+    <span class="years">2010 - 2020</span>
     <span class="city">Houston, TX</span>
     <span class="company">Freelance</span>
     <span class="job">Application Developer</span>
 </p>
 <ul>
     <li>
-        Developing and maintaining websites and desktop applications for clients.
+        Developed and maintained websites and desktop applications for clients.
     </li>
     <li>
-        Collecting, analyzing, and presenting business data for clients.
+        Collected, processed, analyzed, and presented business data for clients.
     </li>
 </ul>
 
@@ -143,8 +157,7 @@
         to add features and fix issues.
     </li>
     <li>
-        Established a theoretical framework to transform any join-group-aggregate queries
-        for aggregate pushdown.
+        Established a theoretical framework to transform any join-group-aggregate queries for optimization.
     </li>
     <li>
         Improved data warehouse TPC benchmarks; invented new transformation rules in the query optimizer.
@@ -163,20 +176,20 @@
 </p>
 <ul>
     <li>
-        Created a workflow system for document processing,
-        with a language, compiler, engine, and admin interface.
+        Created a backend workflow system,
+        with a modeling language, compiler, engine, and admin interface.
     </li>
     <li>
         Created various backend frameworks, including proprietary ORM, caching, distributed consensus.
     </li>
     <li>
-        Create a system for clients to directly modify webpages, to version, stage, and publish their edits.
+        Create a frontend system for clients to edit, version, audit, stage, and publish web pages.
     </li>
     <li>
         Maintained and improved website performance, scalability and availability.
     </li>
     <li>
-        Implemented various business features, particularly identity management, access control, e-commerce.
+        Implemented various business features, in particular identity management, access control, e-commerce.
     </li>
     <li>
         Integrated with client systems through numerous proprietary and industry standard protocols.
@@ -228,32 +241,33 @@
 </ul>
 
 <h2>Education</h2>
-<table id="edu">
-    <tr>
-        <td>2001</td>
-        <td>M.S.</td>
-        <td>in</td>
-        <td>Computer Science</td>
-        <td>Loyola University Chicago</td>
-        <td>Chicago, IL</td>
-    </tr>
-    <tr>
-        <td>2000</td>
-        <td>M.S.</td>
-        <td>in</td>
-        <td>Physics</td>
-        <td>Northwestern University</td>
-        <td>Evanston, IL</td>
-    </tr>
-    <tr>
-        <td>1997</td>
-        <td>B.S.</td>
-        <td>in</td>
-        <td>Physics</td>
-        <td>Peking University</td>
-        <td>Beijing, China</td>
-    </tr>
-</table>
+<ul>
+    <li>
+        <span class="edu_degree">M.S.</span>
+        in
+        <span class="edu_field">Computer Science</span>
+        <span class="edu_year">2001</span>
+        <span class="edu_univ">Loyola University Chicago</span>
+        <span class="edu_city">Chicago, IL</span>
+    </li>
+    <li>
+        <span class="edu_degree">M.S.</span>
+        in
+        <span class="edu_field">Physics</span>
+        <span class="edu_year">2000</span>
+        <span class="edu_univ">Northwestern University</span>
+        <span class="edu_city">Evanston, IL</span>
+    </li>
+    <li>
+        <span class="edu_degree">B.S.</span>
+        in
+        <span class="edu_field">Physics</span>
+        <span class="edu_year">1997</span>
+        <span class="edu_univ">Peking University</span>
+        <span class="edu_city">Beijing, China</span>
+    </li>
+</ul>
+
 
 </body>
 </html>
