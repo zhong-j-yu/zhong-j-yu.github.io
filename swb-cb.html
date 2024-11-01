@@ -1,0 +1,14 @@
+<html>
+<head>
+    <script>
+        document.addEventListener("DOMContentLoaded", (event) => {
+            const url = "http://localhost:1234" + location.pathname+location.search;
+            document.getElementById("redirect-link").href = url;
+            window.location.href = url;
+        });
+    </script>
+</head>
+<body>
+<a id="redirect-link" href="">redirect</a>
+</body>
+</html>
