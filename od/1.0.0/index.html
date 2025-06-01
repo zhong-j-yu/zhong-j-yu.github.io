@@ -12,7 +12,7 @@
 <h1>OD</h1>
 
 <p><strong><code>OD</code></strong> is a simple <em>Service Locator</em> library for Java 6+.</p>
-<p>While the Service Locator pattern is widely discredited, it may still have merits in some situations; see article <a href="http://bayou.io/draft/In_Defense_of_Service_Locator.html"><em>In Defense of Service Locator</em></a>. We created this library for people who may consider using Service Locator in their applications.</p>
+<p>While the Service Locator pattern is widely discredited, it may still have merits in some situations; see article <a href="https://bayou-io.github.io/draft/In_Defense_of_Service_Locator.html"><em>In Defense of Service Locator</em></a>. We created this library for people who may consider using Service Locator in their applications.</p>
 <p><a href="od-1.0.0.jar">[ od-1.0.0.jar ]</a> &nbsp;&nbsp;&nbsp;&nbsp; <a href="javadoc/">[ javadoc ]</a> &nbsp;&nbsp;&nbsp;&nbsp; <a href="https://github.com/zhong-j-yu/od">[ github repo ]</a> &nbsp;&nbsp;&nbsp;&nbsp; <a href="https://groups.google.com/forum/#!forum/od-service-locator">[ google group ]</a></p>
 <div class=toc><p>Contents</p>
 <ul>
@@ -87,7 +87,7 @@ OD.Local.setBindings(prev); // restore bindings
 <h3>Wildcard</h3>
 
 <p>To avoid confusion, we do not automatically extend bindings to <em>super classes/interfaces</em>. For example, a binding of <code>Integer</code> does not imply a binding of <code>Number</code>. If you do need that, you can manually add multiple bindings.</p>
-<p>On the other hand, we do extend bindings to <em>super types</em> through <a href="http://bayou.io/draft/Capturing_Wildcards.html#Wild_Type">wildcards</a>; therefore, a binding of <code>List&lt;Integer&gt;</code> can be looked up by <code>List&lt;? extends Number&gt;</code>.</p>
+<p>On the other hand, we do extend bindings to <em>super types</em> through <a href="https://bayou-io.github.io/draft/Capturing_Wildcards.html#Wild_Type">wildcards</a>; therefore, a binding of <code>List&lt;Integer&gt;</code> can be looked up by <code>List&lt;? extends Number&gt;</code>.</p>
 <pre>
 OD.get( new ClassType&lt; List&lt;? extends Number&gt; &gt;(){} );
                        ----------------------
