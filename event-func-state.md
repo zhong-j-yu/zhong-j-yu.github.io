@@ -1,5 +1,5 @@
 
-# event, function, state, and event
+# event, function, state machine, and event order
 
 A system accepts inbound events from external systems,
 defines and computes a selected set of fuctions on these events.
@@ -10,48 +10,93 @@ There are also internal events between subsystems.
 
 ## function
 
+A function is an aggregate over events.
+(typically if it reduces cardinality)
+
+Functions can be composed with other functions,
+forming a DAG of aggregates.
+
 Fuctions form the ontology of the system,
-some of which are recognized as base entities.
 
-A function is an aggregation of events.
+Some of functions are recognized as base entities in the ontology,
+which are not composed from other functions.
+A lot more other functions are derivitive; they could be mistaken
+as entities of their own right if computed physically and result persisted,
+result not entirely depend on events, also on environment at compute time.
 
-Functions can be defined on top of other functions,
-forming a hierachy of aggregations.
+Functions are not physical; definition, not computation.
 
-## Problems with function:
+### computation
+
+physical, space time.
+
+### "action"
+
+just functions? FP-nuts? what about actions?
+
+internal action: all are devices for the purpose of compute functions.
+
+external action: results of some functions. outbound events delivered by 
+some device. such deliveries are interesting inbound events to this system itself.
+
+## woes of function:
 
 most functions require a structure some events, not just set of events.
 The strucutrure is mostly a sequence of events.
-(eventual consistency, i.e. temporary inconsistency. 
-it's a compromise, not a feature. users are conditioned to accept it)
+The ordering needs to be established/provided by function callers.
+
+eventual consistency, i.e. temporary inconsistency. 
+it's a compromise, not a feature. users are conditioned to accept it.
+eventual consistency at infinite future: it's never consistent.
+but maybe consistency is not definable: such as world population at T.
+
 
 it's costly to compute fuctions by-the-letter; 
-every computation requires iterating through all events.
+at mininum it needs to read all events.
 
-## state
+## state machine
 
-Opposed to Church's function is Turing's state machine.
-Many functions can be reasonally expressed as
+Opposed to Church's function is Turing's machine.
+Many functions can be expressed as
 
-  f(En) = f'(s_n)
-  s_n+1 = t(s_n, e_n)
+    f(En) = f'(s_n), s_n+1 = t(s_n, e_n)
 
-The current state is stored for quicky retrieval.
+where s_n and t require only O(1) space and time.
+
+This is a _finite_ state machine; we are never bothered 
+by that in practice -- there is not real Turing machine,
+all computer systems are FSM.
+
+but, it *is* deterministic. randomness will be discussed later.
+
+physical state machine in action.
+not to invent another word, SM typically referes to physical one.
+
+The current state is available for quicky retrieval.
 State transitions are typically inexpensive to compute.
-They are real-time incremental/accumalative aggregations.
+They are real-time incremental/accumalative pre-aggregations.
 
-There are solutions (such as Risingwave Materialize) that automatically
-convert and compute a large class of functions as state machines.
+There are solutions (such as auto-refresh materialized view) 
+that automatically convert and compute a class of functions as state machines.
 
-A state machine imposes an order on input events.
-State transitions can become outbound events to other systems.
+A physical state machine in action imposes an order on input events.
+State transitions can become outbound events fed to other systems.
 
-Transactional databases are state machines.
+A physical state machine can ACK events; however, lack of ACK for an event
+is possible and leaves event sender in wonder. Often it's solved by
+repeatedly re-sending the events. A state machine thus needs to be
+prepared to deduplicate events, i.e. idempotence.
 
-## function vs state
+physical state machine is not pure -- results, i.e. ordering,
+depend on circumstances at space time where it occurs.
+event replay may end up with different results.
+
+## woes of state machine
+
+## function vs state machine
 
 When we specify a system, which one should we use,
-function or state? Perhaps both.
+function or state machine? Perhaps both.
 
 Typically, our first intuitition of a system is a set of vaguely
 specified state machines, with some core entity states
@@ -81,6 +126,12 @@ the state machine has the function as the target/goal.
 It guides us to design the state machine completely and correctly,
 and the correctness can be checked opposed to the function.
 
+## databases
+
+transactional: state machine. serialize transactions, i.e. order events.
+
+query: function: filter individual states; agg; composition of functions.
+
 ## event order
 
 While a state machine orders its input events,
@@ -91,48 +142,103 @@ We want an event ordering that is consistent to all functions
 and state machines.
 Replay for re-compute, or for new functions.
 
+if the order of e_i, e_j doesn't change the result of any function,
+they don't need to be ordered.
 partial order. partition. (selected set of functions in current considerations)
 for partition/performance. 
+
+## "eventual consistency"
+
+move discussions here.
 
 ## event sorter
 
 event sorter. state machine does nothing but order input events. (partial DAG)
 events are persisted along with the order.
 
+event feeder may get positive ACK from event sorter.
+However, there is no reliable way to know event is dropped by the sorter.
+Either sorter implements idempotence in event ingestion, detect/ignore dupe events,
+or downstreams should be prepared for duplicate events.
+
 event filter. based on event attributes. time range, open-ended.
 delivery in order. 
-(some topological order of the partial order. )
+(some topological order of the partial order DAG. )
 
 read consistency:
 - r sees ej => r sees any ei that ei<ej
 - r1 sees e => r2 sees e. (same observer)
 
+event sorter is the only physical device in the system; 
+everything else in the system are to compute _pure_ functions,
+functions over ordered events and nothing else.
 
-Kafka is an event sorter where events are partitioned by type and key.
+ideally, replayable - all destroyed except event sorter. 
+system can be reconstructed by replaying events from start.
+maybe too difficult to achieve completely; at least for some part.
+
+good to aim for "pure". 
+but maybe too difficult to be pure on everything; compromise.
+
+### randomness?
+
+not deterministic on events. how to deal with it if we want to be replayable:
+
+timestamp/machine-ip of a computation step -- should not be essential.
+
+UUID? only need because contention from concurrent events.
+not needed if events are "globally" ordered.
+(perhaps not needed either just to avoid contention from partitions,
+why not just prefix id with partition key)
+but if an external system do demand UUID...
+
+randomness mandated by application requirements, external requirements,
+contention from partitions, or some algo used? 
+think about a game with a dice.
+insert random seeds to event sorter?
+true random? throw dice -> outbound event to god who plays dice, 
+sends result back as inbound event. 
+SM: state=requesting random, waiting on random.
+transition action: create random, sent to event sorter.
+indeed this introduces latency.
+
+pause/delay: post an article; blocked for 10s. rate limiting?
+during replay how to skip them fast.
 
 ## woes of partial order
 
 is it really cheap because it doesn't need to order all events?
-complicted. limited to preconceived boundary of features.
+complicated. limited to preconceived boundary of features.
+overly unnecessary ordering, hard to re-partition to scale.
 adding new ordering to old events, without changing old orders.
 example: indepedent accounts. trouble when accounts need to interact with each other.
 Accidental ordering: two events are ordered when they don't need to be.
 If a new function is defined that requires their ordering, 
 the previously established order may not be correct.
+Difficult to order (account, inventory).
 
-## global total order
+system evolution means new events and new functions (possibly drop old/bad functions)
+
+## global total order?
 
 global total order among all events. (all functions, including future ones)
 If this is possible, it removes a major headache in system design and implementation.
 
-Global order is indeed trivially achievable for many systems of moderate scale.
-(which wasted a lot of resources to design for a scale they'll never each)
-
 Sub-systems can still be partitioned to concurrently process subsets of events.
 However when they join they may need to align on the global order.
 
-## open question: 
+Global order is indeed trivially achievable with one central device (such as kafka)
+for many systems of moderate scale.
+(which wasted a lot of resources to design for a scale they'll never each)
+They probably should do global order other than get into the mess of partial order.
 
+todo: one kafka one topic one partition: max throughput/latency? 
+bottleneck? storage?
+
+### open question: 
+
+since we all pretend to be building infinitely scalable systems.
 
 For large scale: an event sorter, for global total order, scalable, resilient, performant.
+
 
