@@ -1,14 +1,17 @@
 
-# event, function, state machine, and event order
+# EFSO: event, function, state, order
 
-A system accepts inbound events from external systems,
-defines and computes a selected set of fuctions on these events.
+A computer system:
+- ingests inbound events from external systems
+- defines a selected set of fuctions on these events
+- computes these functions on demand
+
 Fuction results are available for on-demand polling,
 or as outbound events pushed to external systems.
-(Act of push may be interesting inbound events to this system).
-There are also internal events between subsystems.
 
 ## function
+
+Some functions are defined by composing other functions.
 
 A function is an aggregate over events.
 (typically if it reduces cardinality)
@@ -22,9 +25,14 @@ Some of functions are recognized as base entities in the ontology,
 which are not composed from other functions.
 A lot more other functions are derivitive; they could be mistaken
 as entities of their own right if computed physically and result persisted,
-result not entirely depend on events, also on environment at compute time.
+result not entirely depend on events, also on environment at compute time;
+they have extra inputs other than external events.
 
 Functions are not physical; definition, not computation.
+
+worth to stress on *definition* of function, which is often overlooked in engineering.
+
+compare function results: same result: some equivalency criteria; weaker than identical.
 
 ### computation
 
@@ -49,7 +57,14 @@ eventual consistency, i.e. temporary inconsistency.
 it's a compromise, not a feature. users are conditioned to accept it.
 eventual consistency at infinite future: it's never consistent.
 but maybe consistency is not definable: such as world population at T.
+better example: number of active users of a mobile app at time T.
+betetr example: 2 partitions each with instant consistency; sum of them.
 
+Sometimes instant consistency makes no sense even if it's definable/computable.
+world population at T: you can define it and compute it, but that's just your choice.
+asymptotic consistency? average consistency? 
+but nothing wrong if your computer system implements an insant consistency,
+as long as it's admitted that it is incidental, not some absolute truth.
 
 it's costly to compute fuctions by-the-letter; 
 at mininum it needs to read all events.
@@ -172,6 +187,7 @@ read consistency:
 event sorter is the only physical device in the system; 
 everything else in the system are to compute _pure_ functions,
 functions over ordered events and nothing else.
+event sorter is critical and cannot be down.
 
 ideally, replayable - all destroyed except event sorter. 
 system can be reconstructed by replaying events from start.
@@ -241,4 +257,9 @@ since we all pretend to be building infinitely scalable systems.
 
 For large scale: an event sorter, for global total order, scalable, resilient, performant.
 
+N partitions (each with M replicas) with local clocks per partition.
+event ordered by (timestamp, partition)
+clock sync frequently; still drift in clocks; 
+more importantly, diff latency in serving oberservers.
+Need to align on timestamps among partitions for total order.
 
